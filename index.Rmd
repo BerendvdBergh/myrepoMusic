@@ -1,10 +1,11 @@
 ---
-title: "Demo Portfolio for Computational Musicology 2025"
-author: "John Ashley Burgoyne"
+title: "Berend's portfolio, homework 8 version"
+author: "Berend van den Bergh"
 date: "Block 4"
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
+    theme: lumen
 ---
 
 ```{r setup, include=FALSE}
@@ -13,15 +14,13 @@ library(flexdashboard)
 library(plotly)
 ```
 
-### Welcome to Computational Musicology 2024!
+### Welcome my github page on musicology
 
-Welcome to Computational Musicology 2024! This storyboard contains further examples from each week to inspire you.
+Dear reader, I welcome you to my github page. On the other tabs you will find some visualisations. 
 
-You can access the lecture notes at the following links.
+lorum ipsum blabla
 
-- [Week 7 · Computational Musicology and (Audio) Visualisation](./notes/compmus2025-w07.html)
-
-### Visualising the AI Song Contest
+### Visualising the class corpus and my own genAI tracks
 
 ```{r}
 aisc2024 <- read_csv("C:/Users/beren/myrepoMusic/aisc2024.csv")
@@ -73,3 +72,7 @@ ggplotly()
 ***
 
 This is the bad visualisation of the AI Song Contest we used in our first lab session, this time in a dashboard.
+
+### Conclusion and discussion!
+
+Lorum ipsum bzz
