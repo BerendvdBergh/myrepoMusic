@@ -2,8 +2,13 @@
 title: "RepoMusicFile"
 author: "Berend vdB"
 date: "2025-02-12"
-output: html_document
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    theme: lumen
 ---
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -18,7 +23,7 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r cars}
 summary(cars)
 ```
-test test test
+test test test 3
 ## Including Plots
 
 You can also embed plots, for example:
