@@ -17,8 +17,11 @@ library(plotly)
 ### Welcome my github page on musicology
 
 Dear reader, I welcome you to my github page. On the other tabs you will find some visualisations. 
+The songs i have created using AI were inspired by this song.
 
-lorum ipsum blabla
+```{r, results='asis', echo=FALSE}
+cat('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/6iGMRy5RDMiAdTpuMB5gAm?utm_source=generator" width="100%" height="152" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>')
+```
 
 ### Visualising the class corpus and my own genAI tracks
 
