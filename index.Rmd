@@ -6,8 +6,7 @@ output:
   flexdashboard::flex_dashboard:
     storyboard: true
     theme: lumen
-    self_contained: false
-    
+
 ---
 
 ```{r setup, include=FALSE}
@@ -49,11 +48,11 @@ test 2
 Below here are my prompts:
 
 <details>
-  <summary>Click to show prompts</summary>
+  <summary>Click here to show prompts</summary>
   
-*The prompt for the first song was: "A house/hardgroove beat with high energy and danceability, a blend of hefty kicks with catchy riffs and stabs, with a BPM of 143, the key should be in C# Major and the camelot should be 3B."*
+The prompt for the first song was: *"A house/hardgroove beat with high energy and danceability, a blend of hefty kicks with catchy riffs and stabs, with a BPM of 143, the key should be in C# Major and the camelot should be 3B."*
 
-*The prompt for the second song was: "A hardhouse/trance beat with high energy and danceability, with a bpm of 150, the key should be in F# Minor and the camelot should be 11A. It should have a strong basskick."*
+The prompt for the second song was: *"A hardhouse/trance beat with high energy and danceability, with a bpm of 150, the key should be in F# Minor and the camelot should be 11A. It should have a strong basskick."*
 
 
 
