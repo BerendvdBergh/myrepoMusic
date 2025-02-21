@@ -54,28 +54,33 @@ I came up with these prompts by looking up descriptions of the artists of the so
 
 ```{r}
 classcorp <- read_csv("C:/Users/beren/myrepoMusic/compmus2025.csv")
-classcorp |>                   # Start with the data
-  ggplot(                     # Set up the plot.
-    aes(
-      x = tempo,
-      y = arousal,
-      size = instrumentalness,
-      colour = danceability
-    )
-  ) +
-  geom_point(alpha = 0.7) +              # Scatter plot.
+
+classcorp <- classcorp |> 
+  mutate(highlight = ifelse(filename %in% c("berend-b-1", "berend-b-2"), "yes", "no"))
+
+ggplot(classcorp, aes(
+    x = tempo,
+    y = arousal,
+    size = instrumentalness,
+    colour = danceability
+  )) +
+
+
+  geom_point(alpha = 0.7, position = position_jitter(width = 0, height = 0.2)) +              # Scatter plot.
   geom_rug(linewidth = 0.2) + # Add 'fringes' to show data distribution.
  
   scale_x_continuous(         # Fine-tune the x axis.
     limits = c(70, 150),
-    breaks = c(50, 100, 120), # Specify grid lines
+    breaks = c(80, 100, 120, 140), # Specify grid lines
     minor_breaks = NULL       # Remove 'minor' grid lines.
   ) +
   
    # Highlighting your own songs
   geom_point(
-    data = classcorp |> filter(filename %in% c("berend-b-1", "berend-b-2")),
-    aes(x = tempo, y = arousal, colour = danceability, size = instrumentalness)
+    #data = classcorp |> filter(filename %in% c("berend-b-1", "berend-b-2")),
+    data = classcorp |> filter(highlight == "yes")
+
+    #aes(x = tempo, y = arousal, colour = danceability, size = instrumentalness)
     
   ) +
   geom_text(
@@ -130,4 +135,4 @@ This is my visualisation of the class corpus.
 
 ### Conclusion and discussion!
 
-I did not have too much time this week yet, but as one can see from the visualisations it is clear that my songs have very high dancebility and arousal in comparison to the class corpus.
+I did not have too much time this week yet, but as one can see from the visualisations it is clear that my songs have very high dancebility and arousal in comparison to the class corpus, with an average tempo and low instrumentalness
