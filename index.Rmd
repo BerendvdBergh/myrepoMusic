@@ -7,6 +7,7 @@ output:
     storyboard: true
     theme: lumen
     self_contained: true
+    orientation: columns
 
 ---
 
@@ -37,16 +38,8 @@ cat('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/trac
 cat('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/1C5mmdbWD5ksvTU0gHPfao?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>')
 ```
 
-```{r, results='asis', echo=FALSE}
-
-cat('<audio controls>
-        <source src="https://berendvdbergh.github.io/myrepoMusic/berend_b_1.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-     </audio>')
-
-```
-
-Below here are my prompts:
+Here are my AI generated songs. They were created using [StableAudio](https://www.stableaudio.com/)
+(songs yet to be added)
 
 <details>
   <summary style="color: blue; text-decoration: underline; cursor: pointer;">Show prompts</summary>
@@ -55,12 +48,13 @@ The prompt for the first song was: *"A house/hardgroove beat with high energy an
 
 The prompt for the second song was: *"A hardhouse/trance beat with high energy and danceability, with a bpm of 150, the key should be in F# Minor and the camelot should be 11A. It should have a strong basskick."*
 
+I came up with these prompts by looking up descriptions of the artists of the songs that I tried to recreate, and copying how their styles were described. I also looked up these songs on [Tunebat](https://tunebat.com/), which is a website that shows lots of musical data on any song via the spotify API.
 
 ### Visualising the class corpus and my own genAI tracks
 
 ```{r}
-aisc2024 <- read_csv("C:/Users/beren/myrepoMusic/aisc2024.csv")
-aisc2024 |>                   # Start with the data
+classcorp <- read_csv("C:/Users/beren/myrepoMusic/compmus2025.csv")
+classcorp |>                   # Start with the data
   ggplot(                     # Set up the plot.
     aes(
       x = tempo,
@@ -69,25 +63,44 @@ aisc2024 |>                   # Start with the data
       colour = danceability
     )
   ) +
-  geom_point() +              # Scatter plot.
-  geom_rug(linewidth = 0.1) + # Add 'fringes' to show data distribution.
-  geom_text(                  # Add text labels from above.
-    x = 121,
-    y = 4.91,
-    label = "Onda Corta - Sud America",
-    size = 3,                 # Override size (not loudness here).
-    hjust = "left",           # Align left side of label with the point.
-    vjust = "center",         # Align vertical centre of label with the point.
-    angle = 30                # Rotate the text label
-  ) +
+  geom_point(alpha = 0.7) +              # Scatter plot.
+  geom_rug(linewidth = 0.2) + # Add 'fringes' to show data distribution.
+ 
   scale_x_continuous(         # Fine-tune the x axis.
-    limits = c(50, 200),
-    breaks = c(50, 100, 150, 200), # Specify grid lines
+    limits = c(70, 150),
+    breaks = c(50, 100, 120), # Specify grid lines
     minor_breaks = NULL       # Remove 'minor' grid lines.
   ) +
+  
+   # Highlighting your own songs
+  geom_point(
+    data = classcorp |> filter(filename %in% c("berend-b-1", "berend-b-2")),
+    aes(x = tempo, y = arousal, colour = danceability, size = instrumentalness)
+    
+  ) +
+  geom_text(
+    data = classcorp |> filter(filename %in% c("berend-b-1", "berend-b-2")),
+    aes(label = filename),
+  hjust = -2.2,   # Shift slightly to the left
+  vjust = -2.2,   # Move label above the point
+  size = 3,        # Keep label readable but not too big
+  color = "red"
+  ) +
+  
+    # Adding annotation about size
+  annotate(
+    "text", 
+    x = 140,  
+    y = 6.8,  
+    label = "Size = Instrumentalness", 
+    size = 3, 
+    hjust = 1,  
+    color = "black"
+  ) +
+  
   scale_y_continuous(         # Fine-tune the y axis in the same way.
-    limits = c(1, 9),
-    breaks = c(1, 5, 9),
+    limits = c(3, 7),
+    breaks = c(4, 5, 6),
     minor_breaks = NULL
   ) +
   scale_colour_viridis_c() +  # Use the popular viridis colour palette.
@@ -102,13 +115,19 @@ aisc2024 |>                   # Start with the data
     colour = "Danceability"
   )
 ggplotly()
+
+# ------
+
+
+
+
 ```
 
 
 ***
 
-This is the bad visualisation of the AI Song Contest we used in our first lab session, this time in a dashboard.
+This is my visualisation of the class corpus. 
 
 ### Conclusion and discussion!
 
-Lorum ipsum bzz
+I did not have too much time this week yet, but as one can see from the visualisations it is clear that my songs have very high dancebility and arousal in comparison to the class corpus.
