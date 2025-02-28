@@ -5,7 +5,7 @@ date: "Block 4"
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
-    self_contained: true
+    self_contained: false
     theme:
       version: 4
       bg: "#101010"
@@ -20,10 +20,160 @@ library(tidyverse)
 source("compmus.R")
 library(flexdashboard)
 library(plotly)
+library(gridExtra)
 ```
+
+
+### Chromagrams
+
+```{r}
+
+p1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                 
+  compmus_chroma(norm = "identity") |>                 
+  ggplot(aes(x = time, y = pc, fill = value)) + 
+  geom_raster() +
+  scale_y_continuous(
+    breaks = 0:11,
+    minor_breaks = NULL,
+    labels = c("C", "C#|Db", "D", "D#|Eb", "E", "F", "F#|Gb", "G", "G#|Ab", "A", "A#|Bb", "B")
+  ) +
+  scale_fill_viridis_c(guide = "none") +               
+  labs(x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()
+
+p2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                 
+  compmus_chroma(norm = "identity") |>                 
+  ggplot(aes(x = time, y = pc, fill = value)) + 
+  geom_raster() +
+  scale_y_continuous(
+    breaks = 0:11,
+    minor_breaks = NULL,
+    labels = c("C", "C#|Db", "D", "D#|Eb", "E", "F", "F#|Gb", "G", "G#|Ab", "A", "A#|Bb", "B")
+  ) +
+  scale_fill_viridis_c(guide = "none") +               
+  labs(x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()
+
+grid.arrange(p1, p2, ncol = 1)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
+```
+
+***
+
+These are the chromagrams of my own AI songs. The upper plot is from the first song, and the lower plot is the second song. All the following visualisations and plots will follow that order as well, from left to right as well.
+
+
+### Cepstrograms
+
+```{r}
+
+cep1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>             # Change the track
+  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  ggplot(aes(x = time, y = mfcc, fill = value)) + 
+  geom_raster() +
+  scale_y_continuous(
+    breaks = 0:12,
+    minor_breaks = NULL,
+  ) +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(x = "Time (s)", y = "Coefficient Number", fill = NULL) +
+  theme_classic()
+
+cep2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>             # Change the track
+  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  ggplot(aes(x = time, y = mfcc, fill = value)) + 
+  geom_raster() +
+  scale_y_continuous(
+    breaks = 0:12,
+    minor_breaks = NULL,
+  ) +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(x = "Time (s)", y = "Coefficient Number", fill = NULL) +
+  theme_classic() 
+
+grid.arrange(cep1, cep2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
+```
+
+
+### Self similarity matrixes
+
+```{r}
+
+ssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                   # Change the track
+  compmus_chroma(norm = "identity") |>                 # Change the norm
+  compmus_self_similarity(
+    feature = pc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()                                      # Change the theme?
+
+ssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                   # Change the track
+  compmus_chroma(norm = "identity") |>                 # Change the norm
+  compmus_self_similarity(
+    feature = pc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()                                      # Change the theme?
+
+grid.arrange(ssm1, ssm2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
+```
+
+***
+
+The self similarity matrixes show that my songs are quite similar. Especially the 1st song.
+
+### Timbre based self similarity matrixes
+
+```{r}
+
+tssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                           # Change the track
+  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  compmus_self_similarity(
+    feature = mfcc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()                                      # Change the theme?
+
+
+tssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                           # Change the track
+  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  compmus_self_similarity(
+    feature = mfcc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()                                      # Change the theme?
+
+grid.arrange(tssm1, tssm2, ncol = 1)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
+
+```
+
+***
+
+The timbre based self similarity matrixes show that my songs are quite similar too, although there is a bit more difference visible.
+
 
 ### Welcome to my github page on musicology!
 
+**(This and the next page should normally be at the beginning)**
 
 Dear reader, I welcome you to my github page. On the other tabs you will find some visualisations of the (soon to be class corpus of music) 2024 AI Song contest. 
 
@@ -138,114 +288,6 @@ ggplotly()
 
 This is my visualisation of the class corpus. 
 
-### Chromagram nummer 1
-
-
-```{r}
-
-"C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                 # Change the track
-  compmus_chroma(norm = "identity") |>                 # Change the norm
-  ggplot(aes(x = time, y = pc, fill = value)) + 
-  geom_raster() +
-  scale_y_continuous(
-    breaks = 0:11,
-    minor_breaks = NULL,
-    labels = c(
-                "C", "C#|Db", "D", "D#|Eb",
-                "E", "F", "F#|Gb", "G",
-                "G#|Ab", "A", "A#|Bb", "B"
-              )
-  ) +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
-
-```
-
-*** 
-
-Dit is een chromagram van mijn eerste nummer. 
-
-### Chromagram nummer 2
-
-```{r}
-
-"C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                           # Change the track
-  compmus_chroma(norm = "identity") |>                 # Change the norm
-  ggplot(aes(x = time, y = pc, fill = value)) + 
-  geom_raster() +
-  scale_y_continuous(
-    breaks = 0:11,
-    minor_breaks = NULL,
-    labels = c(
-                "C", "C#|Db", "D", "D#|Eb",
-                "E", "F", "F#|Gb", "G",
-                "G#|Ab", "A", "A#|Bb", "B"
-              )
-  ) +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
-
-```
-
-*** 
-
-Dit is een chromagram van mijn tweede nummer
-
-### Cepstrogram van nummer 1
-
-```{r}
-
-"C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                        # Change the track
-  compmus_mfccs(norm = "identity") |>                  # Change the norm
-  ggplot(aes(x = time, y = mfcc, fill = value)) + 
-  geom_raster() +
-  scale_y_continuous(
-    breaks = 0:12,
-    minor_breaks = NULL,
-  ) +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(x = "Time (s)", y = "Coefficient Number", fill = NULL) +
-  theme_classic() 
-
-```
-
-### Self similarity matrix nummer 1
-
-```{r}
-
-"C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                           # Change the track
-  compmus_chroma(norm = "identity") |>                 # Change the norm
-  compmus_self_similarity(
-    feature = pc,
-    distance = "euclidean"                             # Change the distance
-  ) |>   
-  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
-
-```
-
-### Timbre based self similarity matrix
-
-```{r}
-
-"C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                           # Change the track
-  compmus_mfccs(norm = "identity") |>                  # Change the norm
-  compmus_self_similarity(
-    feature = mfcc,
-    distance = "euclidean"                             # Change the distance
-  ) |>   
-  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
-
-```
 
 ### Conclusion and discussion!
 
