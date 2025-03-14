@@ -81,7 +81,38 @@ tempogram2
 
 ***
 
-Dit zijn mijn tempograms, (cyclic = TRUE). 
+These are my tempograms, (cyclic = TRUE).
+
+### Tempo of the class corpus
+
+```{r}
+
+library(readr)
+
+# Load dataset
+classcorp <- read_csv("C:/Users/beren/myrepoMusic/compmus2025.csv")
+
+# Add highlight column
+#classcorp <- classcorp |> 
+ # mutate(highlight = ifelse(filename %in% c("berend-b-1", "berend-b-2"), "yes", "no"))
+
+# Create histogram of tempo
+ggplot(classcorp, aes(x = tempo)) + 
+  geom_histogram(binwidth = 5, color = "black", alpha = 0.7) + 
+  scale_fill_manual(values = c("no" = "gray", "yes" = "red")) + 
+  scale_x_continuous(limits = c(70, 150), breaks = seq(70, 150, by = 10)) + 
+  theme_minimal() + 
+  labs(
+    title = "Tempo Distribution of Class Corpus",
+    x = "Tempo (BPM)",
+    y = "Count",
+    fill = "Highlighted Songs"
+  )
+
+```
+***
+
+Here is a histogram of the tempo from the whole class corpus. There is a distinct peak around 85 bpm.
 
 ### Chordagrams
 
@@ -374,27 +405,17 @@ Whichever route you took, be sure to listen to the final result of the AI songs 
 
 (Currently the embedded links are not working properly, because using them stops the website from appearing as a storyboard. If you still wish to hear what the songs are like you can look up these titles below.)
 
-```{r, results='asis', echo=FALSE}
-cat('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/6iGMRy5RDMiAdTpuMB5gAm?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>')
 
-cat('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2I7Ph7hRkjOMgy9WCsE4F3?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>')
+```{=html}
 
-# cat changed into read_html
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/6iGMRy5RDMiAdTpuMB5gAm?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 
-read_html('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/1C5mmdbWD5ksvTU0gHPfao?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>')
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2I7Ph7hRkjOMgy9WCsE4F3?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2I7Ph7hRkjOMgy9WCsE4F3?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
 ```
-The song dikke beat by pegassi
 
-read_htm l: 
-
-read_html('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/1C5mmdbWD5ksvTU0gHPfao?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>')
-
-
-zzzz
-
-cat
-
-cat('<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2I7Ph7hRkjOMgy9WCsE4F3?utm_source=generator" width="100%" height="80" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>')
 
 Here are my AI generated songs. They were created using [StableAudio](https://www.stableaudio.com/)
 (songs yet to be added)
@@ -418,7 +439,7 @@ Your browser does not support the audio element.
 My second song
 
 cat('<audio controls>
-<source src="berend-b-2.mp3" type="audio/mpeg">
+<source src="berend_b_2.mp3" type="audio/mpeg">
 Your browser does not support the audio element.
 </audio>')
 
