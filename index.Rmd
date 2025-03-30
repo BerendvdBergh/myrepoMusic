@@ -29,6 +29,7 @@ library(rvest)
 library(tidymodels)
 library(ggdendro)
 library(heatmaply)
+library(patchwork)
 ```
 
 Introduction {.storyboard}
@@ -167,7 +168,6 @@ ggplot(long_data, aes(x = variable, y = value)) +
   coord_flip() +  # Flip to horizontal for readability
   theme_minimal() +
   labs(title = "Feature Distribution Across Corpus",
-       x = "Feature", y = "Value",
        color = "Song") +
   theme(axis.text.x = element_text(size = 12, face = "bold"),
         panel.grid.major = element_line(color = "grey", size = 0.5),
@@ -179,7 +179,9 @@ ggplotly()
 
 ***
 
-In these violin plots the remaining features can be seen, with my songs highlighted together with the corpus average. It shows that my songs are fairly close to the average in instrumentalness and approachability, but score higher in engaginess and danceability. Instrumentalness predicts the presence of vocals in the song, approachability says something about how "approachable" or "familiar" a song feels. Engaginess measures how compelling or complex the track is. Danceability, like the name implies, measures how well one can dance to the song. For most features my two songs are quite close to eachother, except for instrumentalness, and as you might have noticed in the scatterplot, the tempo is quite different. Lets have a closer look at the tempo of my songs.
+In these violin plots the remaining features can be seen, with my songs highlighted together with the corpus average. It shows that my songs are fairly close to the average in instrumentalness and approachability, but score higher in engaginess and danceability. Instrumentalness predicts the presence of vocals in the song, approachability says something about how "approachable" or "familiar" a song feels. Engaginess measures how compelling or complex the track is. Danceability, like the name implies, measures how well one can dance to the song. 
+
+For most features my two songs are quite close to eachother, except for instrumentalness, and as you might have noticed in the scatterplot, the tempo is quite different. Lets have a closer look at the tempo of my songs.
 
 
 How different are my two songs? {.storyboard}
@@ -251,6 +253,47 @@ This energy novelty function shows that the first song is having little changes 
 Looking at the novelty function for the second song, we see a more fluctuating pattern, with different parts highlighted by drops and increases in energy novelty. 
 
 Having seen these novelty functions, we can start to see the differences in the track more. We will now take a look at some of the keys and chords used in the songs.
+
+
+### Chromagrams
+
+```{r}
+
+p1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                 
+  compmus_chroma(norm = "identity") |>                 
+  ggplot(aes(x = time, y = pc, fill = value)) + 
+  geom_raster() +
+  scale_y_continuous(
+    breaks = 0:11,
+    minor_breaks = NULL,
+    labels = c("C", "C#|Db", "D", "D#|Eb", "E", "F", "F#|Gb", "G", "G#|Ab", "A", "A#|Bb", "B")
+  ) +
+  scale_fill_viridis_c(guide = "none") +               
+  labs(title = "Chromagram song 1", x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()
+
+p2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                 
+  compmus_chroma(norm = "identity") |>                 
+  ggplot(aes(x = time, y = pc, fill = value)) + 
+  geom_raster() +
+  scale_y_continuous(
+    breaks = 0:11,
+    minor_breaks = NULL,
+    labels = c("C", "C#|Db", "D", "D#|Eb", "E", "F", "F#|Gb", "G", "G#|Ab", "A", "A#|Bb", "B")
+  ) +
+  scale_fill_viridis_c(guide = "none") +               
+  labs(title = "Chromagram song 2", x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()
+
+grid.arrange(p1, p2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
+```
+
+***
+
+To analyze the harmonic structure of my songs lets first have a look at the chromagrams. It is immediately visible that song 1 has mainly G, G# and A#. For the notes from C# to F# there is much less to be seen. For the second song on the other hand, We have a much more even spread throughout the song with leading notes for the first half being F#, C#, which then switches to A# for the second part of the song. 
+
+We can already distinguish a greater difference in tonal centers, so lets have a look at the chordagrams to see if we can find out more about the harmonics of my songs.
 
 
 ### Chordagrams
@@ -361,11 +404,11 @@ get_pr <- function(fit) {
 ```{r, out.width="100%", out.height="60%"}
 
 chrdgrm1 <- "features/berend-b-1.json" |> 
-  compmus_chroma(norm = "manhattan") |> 
+  compmus_chroma(norm = "euclidean") |> 
   compmus_match_pitch_templates(
     chord_templates,         # Change to chord_templates if desired
-    norm = "manhattan",     # Try different norms (and match it with what you used in `compmus_chroma`)
-    distance = "manhattan"   # Try different distance metrics
+    norm = "euclidean",     # Try different norms (and match it with what you used in `compmus_chroma`)
+    distance = "cosine"   # Try different distance metrics
   ) |>
   ggplot(aes(x = time, y = name, fill = d)) + 
   geom_raster() +
@@ -373,14 +416,14 @@ chrdgrm1 <- "features/berend-b-1.json" |>
   labs(title = "Chordagram song 1", x = "Time (s)", y = "Template", fill = NULL) +
   theme_classic()                                      # Change the theme?
 
-chrdgrm1
+#chrdgrm1
 
 chrdgrm2 <- "features/berend-b-2.json" |> 
-  compmus_chroma(norm = "manhattan") |> 
+  compmus_chroma(norm = "euclidean") |> 
   compmus_match_pitch_templates(
     chord_templates,         # Change to chord_templates if desired
-    norm = "manhattan",     # Try different norms (and match it with what you used in `compmus_chroma`)
-    distance = "manhattan"   # Try different distance metrics
+    norm = "euclidean",     # Try different norms (and match it with what you used in `compmus_chroma`)
+    distance = "cosine"   # Try different distance metrics
   ) |>
   ggplot(aes(x = time, y = name, fill = d)) + 
   geom_raster() +
@@ -388,14 +431,16 @@ chrdgrm2 <- "features/berend-b-2.json" |>
   labs(title = "Chordagram song 2", x = "Time (s)", y = "Template", fill = NULL) +
   theme_classic()                                      # Change the theme?
 
-chrdgrm2
+#chrdgrm2
+
+grid.arrange(chrdgrm1, chrdgrm2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
 
 
 ```
 
 ***
 
-Here are my two chordagrams. For the first song I used the chord templates with manhattan distance and norm. For the second song I went with the key templates and an euclidean norm and angular distance metric.
+Here are my two chordagrams. I used a euclidean norm with a cosine distance for both of my songs. Because both of my songs, but the first one especially, are quite repetitive, there is not too much of a prominent chord progression to be seen. In the second song there is a bit of a shift around 50 seconds that is reflected in the chordagram, but for the most part the chords are looping, which is seen more often in the genre of my songs. Perhaps the keygram can tell us more.
 
 ### Keygram song 1
 
@@ -414,14 +459,7 @@ keygrm1 <- "features/berend-b-1.json" |>
   labs(title = "Keygram song 1", x = "Time (s)", y = "Template", fill = NULL) +
   theme_classic()                                      # Change the theme?
 
-keygrm1
-
-```
-
-
-### Keygram song 2
-
-```{r}
+#keygrm1
 
 keygrm2 <- "features/berend-b-2.json" |> 
   compmus_chroma(norm = "euclidean") |> 
@@ -436,48 +474,20 @@ keygrm2 <- "features/berend-b-2.json" |>
   labs(title = "Keygram song 2", x = "Time (s)", y = "Template", fill = NULL) +
   theme_classic()                                      # Change the theme?
 
-keygrm2
+#keygrm2
+
+grid.arrange(keygrm1, keygrm2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
 
 ```
 
-
-### Chromagrams
-
-```{r}
-
-p1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                 
-  compmus_chroma(norm = "identity") |>                 
-  ggplot(aes(x = time, y = pc, fill = value)) + 
-  geom_raster() +
-  scale_y_continuous(
-    breaks = 0:11,
-    minor_breaks = NULL,
-    labels = c("C", "C#|Db", "D", "D#|Eb", "E", "F", "F#|Gb", "G", "G#|Ab", "A", "A#|Bb", "B")
-  ) +
-  scale_fill_viridis_c(guide = "none") +               
-  labs(x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()
-
-p2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                 
-  compmus_chroma(norm = "identity") |>                 
-  ggplot(aes(x = time, y = pc, fill = value)) + 
-  geom_raster() +
-  scale_y_continuous(
-    breaks = 0:11,
-    minor_breaks = NULL,
-    labels = c("C", "C#|Db", "D", "D#|Eb", "E", "F", "F#|Gb", "G", "G#|Ab", "A", "A#|Bb", "B")
-  ) +
-  scale_fill_viridis_c(guide = "none") +               
-  labs(x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()
-
-grid.arrange(p1, p2, ncol = 1)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
-
-```
 
 ***
 
-These are the chromagrams of my own AI songs. The upper plot is from the first song, and the lower plot is the second song. All the following visualisations and plots will follow that order as well, from left to right as well.
+The keygram does not show much difference either, as expected since it is also based on harmonics.
+
+Lets move on to another aspect of our songs; the timbre. 
+
 
 
 ### Cepstrograms
@@ -485,7 +495,7 @@ These are the chromagrams of my own AI songs. The upper plot is from the first s
 ```{r}
 
 cep1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>             # Change the track
-  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  compmus_mfccs(norm = "euclidean") |>                  # Change the norm
   ggplot(aes(x = time, y = mfcc, fill = value)) + 
   geom_raster() +
   scale_y_continuous(
@@ -493,11 +503,11 @@ cep1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>             # C
     minor_breaks = NULL,
   ) +
   scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(x = "Time (s)", y = "Coefficient Number", fill = NULL) +
+  labs(title = "Cepstrogram song 1", x = "Time (s)", y = "Coefficient Number", fill = NULL) +
   theme_classic()
 
 cep2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>             # Change the track
-  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  compmus_mfccs(norm = "euclidean") |>                  # Change the norm
   ggplot(aes(x = time, y = mfcc, fill = value)) + 
   geom_raster() +
   scale_y_continuous(
@@ -505,7 +515,7 @@ cep2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>             # C
     minor_breaks = NULL,
   ) +
   scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(x = "Time (s)", y = "Coefficient Number", fill = NULL) +
+  labs(title = "Cepstrogram song 1", x = "Time (s)", y = "Coefficient Number", fill = NULL) +
   theme_classic() 
 
 grid.arrange(cep1, cep2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
@@ -513,157 +523,187 @@ grid.arrange(cep1, cep2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt t
 ```
 
 
+***
+
+The cepstrogram can be used to show the characteristics of the timbre in the song. What we can tell from my cepstrograms is that both songs have a bright sound, since the first coefficient is the most present, and all other coefficients above that are mostly green which suggests a stable and consistent timbre throughout my songs. 
+
+We are getting closer to figuring out how different my songs are. Currently, I would say they are not quite different, rather similar! Perhaps we should look at it from another angle: How similar are my songs?
+
+
+
+How similar are my songs? {.storyboard}
+=========================================
+
+
+### Self similarity matrixes
+
+```{r}
+
+ssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                   # Change the track
+  compmus_chroma(norm = "identity") |>                 # Change the norm
+  compmus_self_similarity(
+    feature = pc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(title = "Self similarity matrix song 1", x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()                                      # Change the theme?
+
+#ssm1
+
+ssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                   # Change the track
+  compmus_chroma(norm = "identity") |>                 # Change the norm
+  compmus_self_similarity(
+    feature = pc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(title = "Self similarity matrix song 2", x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()                                      # Change the theme?
+
+#ssm2
+
+ssm1 + ssm2
+
+#grid.arrange(ssm1, ssm2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
+```
+
+
+***
+
+From the self similarity matrixes based on chroma, we a vast repeating pattern for the first song, with strong diagonal lines. At a very small level one can see a bit of a chessboard-like pattern which also makes sense since this first song sounds quite a bit like the same loop repeating over and over again.
+
+For the second song we see more variation, but not as much. Around 50 seconds there is something happening, which corresponds to the beat or "kick" stopping for a while to create tension in the song. 
+
+Lets see if this self similarity is as present in the timbre as well.
+
+
+
+### Timbre based SSMs
+
+```{r}
+
+tssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                           # Change the track
+  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  compmus_self_similarity(
+    feature = mfcc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(title = "Timbre based SSM song 1", x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic()                                      # Change the theme?
+
+#tssm1
+
+tssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                       # Change the track
+  compmus_mfccs(norm = "identity") |>                  # Change the norm
+  compmus_self_similarity(
+    feature = mfcc,
+    distance = "euclidean"                             # Change the distance
+  ) |>   
+  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +               # Change the colours?
+  labs(title = "Timbre based SSM song 2", x = "Time (s)", y = NULL, fill = NULL) +
+  theme_classic() 
+
+
+tssm1 + tssm2
+#grid.arrange(tssm1, tssm2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
+
+
+```
+
+
+***
+
+As expected from looking at the cepstrogram before, the timbre stays very similar, which one can tell by the darkness of the plot. The yellow lines at the edge of the plot indicate the end of the song, where the music is slowly faded out. 
+
+If looked at one by one, my songs show similarity in their progression of chroma and timbre. Lets compare the two songs directly to eachother, both on timbre and chroma.
+
+
+
+### Self similarity matrixes: song 1 vs song 2
+
+```{r}
+
+# Load and compute the chroma SSM for both songs
+ssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>  
+  compmus_chroma(norm = "identity") |>  
+  compmus_self_similarity(feature = pc, distance = "euclidean")
+
+ssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>  
+  compmus_chroma(norm = "identity") |>  
+  compmus_self_similarity(feature = pc, distance = "euclidean")
+
+# Compute the absolute difference between the two chroma SSMs
+ssm_diff <- ssm1
+ssm_diff$d <- abs(ssm1$d - ssm2$d)  # Element-wise difference in similarity
+
+# Plot the difference matrix
+ggplot(ssm_diff, aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +  
+  labs(title = "Difference in Chroma-Based SSM (Song 1 vs. Song 2)", 
+       x = "Time (s)", y = "Time (s)") +
+  theme_classic()
+
+```
+
+***
+
+Looking at the lot we can finally answer the question how similar or different my songs are. The answer is that they are very similar. Still, they are different songs, but considering they come from the same AI generator, prompted in a very similar way, I am not surprised. Will the timbre based matrix tell a different story?
+
+
+### Timbre based SSM song 2
+
+
+```{r}
+
+# Load and compute the SSM for both songs
+ssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>  
+  compmus_mfccs(norm = "identity") |>  
+  compmus_self_similarity(feature = mfcc, distance = "euclidean")
+
+ssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>  
+  compmus_mfccs(norm = "identity") |>  
+  compmus_self_similarity(feature = mfcc, distance = "euclidean")
+
+# Compute the absolute difference between the two SSMs
+ssm_diff <- ssm1
+ssm_diff$d <- abs(ssm1$d - ssm2$d)  # Element-wise difference in similarity
+
+# Plot the difference matrix
+ggplot(ssm_diff, aes(x = xtime, y = ytime, fill = d)) + 
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +  
+  labs(title = "Difference in Timbre-Based SSM (Song 1 vs. Song 2)", 
+       x = "Time (s)", y = "Time (s)") +
+  theme_classic()
+
+```
+
+***
+
+The timbre based self similarity matrix shows that my songs are quite similar too, although there is a bit more difference visible, as for the chroma SSM the pattern seemed more noisy, where as here different lines can still be made out.
+
+Lets check zoom out again and consider the entire class corpus. My songs were both AI-generated, but not the entire class used AI. Lets investigate this further.
+
+As a small sidenote: The way these SSMs are computed is by taking the absolute difference of d, not sure if this is the best way, but I couldnt figure out another way to plot the two songs against eachother.
 
 
 AI-Insight {.storyboard}
 =========================================
 
 
-### Classification
-
-```{r}
-compmus2025 <- read_csv("compmus2025.csv")
-
-compmus2025_filtered <- 
-  compmus2025 |> filter(!is.na(ai)) |> 
-  mutate(ai = factor(if_else(ai, "AI", "Non-AI")))
-
-classification_recipe <-
-  recipe(
-    ai ~
-      arousal +
-      danceability +
-      instrumentalness +
-      tempo +
-      valence,
-    data = compmus2025_filtered
-  ) |>
-  step_center(all_predictors()) |>
-  step_scale(all_predictors())      # Converts to z-scores.
-  # step_range(all_predictors())    # Sets range to [0, 1].
-
-compmus_cv <- compmus2025_filtered |> vfold_cv(5)
-
-knn_model <-
-  nearest_neighbor(neighbors = 1) |>
-  set_mode("classification") |> 
-  set_engine("kknn")
-classification_knn <- 
-  workflow() |> 
-  add_recipe(classification_recipe) |> 
-  add_model(knn_model) |> 
-  fit_resamples(compmus_cv, control = control_resamples(save_pred = TRUE))
-
-classification_knn |> get_conf_mat()
-
-classification_knn |> get_conf_mat() |> autoplot(type = "mosaic")
-
-```
-
-
-### Random Forest
-
-```{r}
-
-forest_model <-
-  rand_forest() |>
-  set_mode("classification") |> 
-  set_engine("ranger", importance = "impurity")
-indie_forest <- 
-  workflow() |> 
-  add_recipe(classification_recipe) |> 
-  add_model(forest_model) |> 
-  fit_resamples(
-    compmus_cv, 
-    control = control_resamples(save_pred = TRUE)
-  )
-
-indie_forest |> get_pr()
-
-workflow() |> 
-  add_recipe(classification_recipe) |> 
-  add_model(forest_model) |> 
-  fit(compmus2025_filtered) |> 
-  pluck("fit", "fit", "fit") |>
-  ranger::importance() |> 
-  enframe() |> 
-  mutate(name = fct_reorder(name, value)) |> 
-  ggplot(aes(name, value)) + 
-  geom_col() + 
-  coord_flip() +
-  theme_minimal() +
-  labs(x = NULL, y = "Importance")
-
-compmus2025_filtered |>
-  ggplot(aes(x = valence, y = arousal, colour = ai, size = tempo)) +
-  geom_point(alpha = 0.8) +
-  scale_color_viridis_d() +
-  labs(
-    x = "Valence",
-    y = "Arousal",
-    size = "Tempo",
-    colour = "AI"
-  )
-
-```
-
-### KNN
-
-```{r}
-
-knn_model <-
-  nearest_neighbor(neighbors = 1) |>
-  set_mode("classification") |> 
-  set_engine("kknn")
-classification_knn <- 
-  workflow() |> 
-  add_recipe(classification_recipe) |> 
-  add_model(knn_model) |> 
-  fit_resamples(compmus_cv, control = control_resamples(save_pred = TRUE))
-
-classification_knn |> get_conf_mat()
-classification_knn |> get_conf_mat() |> autoplot(type = "mosaic")
-classification_knn |> get_conf_mat() |> autoplot(type = "heatmap")
-classification_knn |> get_pr()
-
-
-```
-
-
-### Tempo of the class corpus
-
-
-```{r}
-
-library(readr)
-
-# Load dataset
-classcorp <- read_csv("C:/Users/beren/myrepoMusic/compmus2025.csv")
-
-# Add highlight column
-#classcorp <- classcorp |> 
- # mutate(highlight = ifelse(filename %in% c("berend-b-1", "berend-b-2"), "yes", "no"))
-
-# Create histogram of tempo
-ggplot(classcorp, aes(x = tempo)) + 
-  geom_histogram(binwidth = 3, color = "black", alpha = 0.7) + 
-  scale_fill_manual(values = c("no" = "gray", "yes" = "red")) + 
-  scale_x_continuous(limits = c(70, 150), breaks = seq(70, 150, by = 10)) + 
-  theme_minimal() + 
-  labs(
-    title = "Tempo Distribution of Class Corpus",
-    x = "Tempo (BPM)",
-    y = "Count",
-    fill = "Highlighted Songs"
-  )
-
-```
-
-Dendrograms {.storyboard}
-=========================================
-
-
-### Dendogram and Heatmap Dendogram
+### Heatmap Dendogram
 
 ```{r}
 
@@ -714,125 +754,175 @@ heatmaply(
   cluster_juice,
   hclustfun = hclust,
   hclust_method = "average",  # Change for single, average, or complete linkage.
-  dist_method = "euclidean",
-  row_dend_left = TRUE,  # Moves dendrogram to the left
-  fontsize_row = 12,      # Increases text size of row labels
-  branches_lwd = 2,       # Thickens dendrogram branches
-  seriate = "OLO"         # Optimizes row order for better readability
+  dist_method = "euclidean"
 )
 
 ```
 
-Novelty Functions {.storyboard}
-=========================================
+***
 
-verplaatst
+Before we start looking into if certain songs within the corpus are AI or not, lets first start by visualising some features, to check which ones are useful and which clusters might be present in the corpus.
+
+The dendrogram is quite cluttered, so some zoom is required (this can be done by using your mouse, and double clicking will reset the plot). Still, in the overall picture it is visible that most features have distinct color patterns, which tells us that there is plenty of diversity in the data. Lets see if there are other ways to discover the most important features.
+
+
+### Random Forest
+
+```{r}
+
+compmus2025_filtered <- 
+  compmus2025 |> filter(!is.na(ai)) |> 
+  mutate(ai = factor(if_else(ai, "AI", "Non-AI")))
+
+compmus_cv <- compmus2025_filtered |> vfold_cv(5)
+
+classification_recipe <-
+  recipe(
+    ai ~
+      arousal +
+      danceability +
+      instrumentalness +
+      tempo +
+      valence,
+    data = compmus2025_filtered
+  ) |>
+  step_center(all_predictors()) |>
+  step_scale(all_predictors())      # Converts to z-scores.
+  # step_range(all_predictors())    # Sets range to [0, 1].
+
+forest_model <-
+  rand_forest() |>
+  set_mode("classification") |> 
+  set_engine("ranger", importance = "impurity")
+indie_forest <- 
+  workflow() |> 
+  add_recipe(classification_recipe) |> 
+  add_model(forest_model) |> 
+  fit_resamples(
+    compmus_cv, 
+    control = control_resamples(save_pred = TRUE)
+  )
+
+#indie_forest |> get_pr()
+
+workflow() |> 
+  add_recipe(classification_recipe) |> 
+  add_model(forest_model) |> 
+  fit(compmus2025_filtered) |> 
+  pluck("fit", "fit", "fit") |>
+  ranger::importance() |> 
+  enframe() |> 
+  mutate(name = fct_reorder(name, value)) |> 
+  ggplot(aes(name, value)) + 
+  geom_col() + 
+  coord_flip() +
+  theme_minimal() +
+  labs(x = NULL, y = "Importance")
+
+
+
+```
 
 ***
 
-Here one can see my energy novelty and spectral novelty functions of my first song.
+In this plot we can see the importance of features that the random forest model is using to determine whether a song is AI or not. Lets plot these variables to show this more clearly. 
 
 
-Self similarity matrixes {.storyboard}
-=========================================
 
-### Self similarity matrixes
+### Visualisation of AI or not AI
 
 ```{r}
 
-ssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                   # Change the track
-  compmus_chroma(norm = "identity") |>                 # Change the norm
-  compmus_self_similarity(
-    feature = pc,
-    distance = "euclidean"                             # Change the distance
-  ) |>   
-  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(title = "Self similarity matrix song 1", x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
+compmus2025_filtered |>
+  ggplot(aes(x = valence, y = arousal, colour = ai, size = tempo)) +
+  geom_point(alpha = 0.8) +
+  scale_color_viridis_d() +
+  labs(
+    x = "Danceability",
+    y = "Instrumentalness",
+    size = "Tempo",
+    colour = "AI"
+  )
 
-ssm1
-
-
-
-# grid.arrange(ssm1, ssm2, ncol = 2)  # Zet ncol = 2 als je ze naast elkaar wilt tonen
-
-```
-
-
-### Self similarity matrix song 1
-
-```{r}
-
-ssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                   # Change the track
-  compmus_chroma(norm = "identity") |>                 # Change the norm
-  compmus_self_similarity(
-    feature = pc,
-    distance = "euclidean"                             # Change the distance
-  ) |>   
-  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(title = "Self similarity matrix song 2", x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
-
-ssm2
-
+ggplotly()
 ```
 
 ***
 
-The self similarity matrixes show that my songs are quite similar. Especially the 1st song.
+Plotting these variables shows us clusters of AI and non-AI songs. Knowing what these clustermethods are looking for, lets test their precision and recall.
 
-### Timbre based SSM song 1
+
+### KNN, Precision & recall
 
 ```{r}
 
-tssm1 <- "C:/Users/beren/myrepoMusic/features/berend-b-1.json" |>                           # Change the track
-  compmus_mfccs(norm = "identity") |>                  # Change the norm
-  compmus_self_similarity(
-    feature = mfcc,
-    distance = "euclidean"                             # Change the distance
-  ) |>   
-  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(title = "Timbre based SSM song 1", x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
+knn_model <-
+  nearest_neighbor(neighbors = 1) |>
+  set_mode("classification") |> 
+  set_engine("kknn")
+classification_knn <- 
+  workflow() |> 
+  add_recipe(classification_recipe) |> 
+  add_model(knn_model) |> 
+  fit_resamples(compmus_cv, control = control_resamples(save_pred = TRUE))
 
-tssm1
+#classification_knn |> get_conf_mat() |> autoplot(type = "heatmap")
+#classification_knn |> get_pr()
 
+indie_forest |> get_pr()
 
 ```
-### Timbre based SSM song 2
 
 ```{r}
+# Extract precision-recall values
+pr_knn <- classification_knn |> get_pr()
+pr_forest <- indie_forest |> get_pr()
 
+# Combine results into a table
+pr_results <- bind_rows(
+  pr_knn |> mutate(Model = "KNN"),
+  pr_forest |> mutate(Model = "Random Forest")
+)
 
-tssm2 <- "C:/Users/beren/myrepoMusic/features/berend-b-2.json" |>                       # Change the track
-  compmus_mfccs(norm = "identity") |>                  # Change the norm
-  compmus_self_similarity(
-    feature = mfcc,
-    distance = "euclidean"                             # Change the distance
-  ) |>   
-  ggplot(aes(x = xtime, y = ytime, fill = d)) + 
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +               # Change the colours?
-  labs(title = "Timbre based SSM song 2", x = "Time (s)", y = NULL, fill = NULL) +
-  theme_classic()                                      # Change the theme?
+# Prepare data
+pr_results_long <- pr_results |> pivot_longer(cols = c(precision, recall), names_to = "Metric", values_to = "Value")
 
-tssm2
+# Create bar plot
+ggplot(pr_results_long, aes(x = class, y = Value, fill = Metric)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Model) +
+  scale_fill_manual(values = c("precision" = "steelblue", "recall" = "darkorange")) +
+  labs(title = "Precision and Recall for Classification Models",
+       x = "Class",
+       y = "Score",
+       fill = "Metric") +
+  theme_minimal()
+
+ggplotly()
 ```
 
 
 ***
 
-The timbre based self similarity matrixes show that my songs are quite similar too, although there is a bit more difference visible.
+Here we can see the predictions of the Random Forest and the data on precision and recall for the Random Forest and KNN. 
+
+This data shows what the KNN and Random Forest algorithms predicted and how "accurate" its predictions were. A higher precision means fewer false positives, and a higher recall means fewer false negatives. The plot also shows that the Random Forest performed better overall.
+
 
 Conclusions {.storyboard}
 =========================================
 
 ### Conclusion and discussion!
 
-I did not have too much time this week yet, but as one can see from the visualisations it is clear that my songs have very high dancebility and arousal in comparison to the class corpus, with an average tempo and low instrumentalness
+In this project, I analyzed my two tracks using different computational music techniques to better understand their structure and characteristics.
+
+My first song turned out to be quite repetitive, which was clear from its self-similarity matrix and chroma features, showing that it sticks to a loop-based structure, which fits well with house and hardgroove styles. My second song had two drops, and this was reflected in its tempogram, energy novelty function and self-similarity differences, showing a bit more variation and buildup.
+
+Comparing them on harmonics and later by using SSMs I figured out that my songs were, as expected, quite similar to eachother. After this I analyzed the corpus on its distribution of AI and non-AI generated music, and calculated the precision of the Random Forest and KNN algorithms.
+
+Overall, this project helped me get a better grasp of how one can break down music in ways that are not always visible by just listening to the tracks.
+
+As per the discussion:
+I am currently following the bachelor AI, and this subject was something entirely new for me. It has proved very difficult for me to understand a lot of the plots and their uses behind it, since I have never played an instrument before I was already struggling with the reading of notes and the many different terms used in music and music theory. Besides this, I had a very different idea of what this course would look like. Most notably for me, was the fact that the music was still very much aimed towards separate instruments and not EDM-style, more house-like genres. 
+
+Nonetheless, it was very cool to see how much there is to music and all the different ways you can compute many different aspects of it. 
