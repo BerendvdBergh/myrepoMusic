@@ -866,14 +866,6 @@ classification_knn <-
   add_model(knn_model) |> 
   fit_resamples(compmus_cv, control = control_resamples(save_pred = TRUE))
 
-#classification_knn |> get_conf_mat() |> autoplot(type = "heatmap")
-#classification_knn |> get_pr()
-
-indie_forest |> get_pr()
-
-```
-
-```{r}
 # Extract precision-recall values
 pr_knn <- classification_knn |> get_pr()
 pr_forest <- indie_forest |> get_pr()
@@ -899,14 +891,45 @@ ggplot(pr_results_long, aes(x = class, y = Value, fill = Metric)) +
   theme_minimal()
 
 ggplotly()
+
+#indie_forest |> get_pr()
 ```
 
 
 ***
 
-Here we can see the predictions of the Random Forest and the data on precision and recall for the Random Forest and KNN. 
 
-This data shows what the KNN and Random Forest algorithms predicted and how "accurate" its predictions were. A higher precision means fewer false positives, and a higher recall means fewer false negatives. The plot also shows that the Random Forest performed better overall.
+```{r}
+
+knn_model <-
+  nearest_neighbor(neighbors = 1) |>
+  set_mode("classification") |> 
+  set_engine("kknn")
+classification_knn <- 
+  workflow() |> 
+  add_recipe(classification_recipe) |> 
+  add_model(knn_model) |> 
+  fit_resamples(compmus_cv, control = control_resamples(save_pred = TRUE))
+
+# Extract precision-recall values
+pr_knn <- classification_knn |> get_pr()
+pr_forest <- indie_forest |> get_pr()
+
+# Combine results into a table
+pr_results <- bind_rows(
+  pr_knn |> mutate(Model = "KNN"),
+  pr_forest |> mutate(Model = "Random Forest")
+)
+
+
+indie_forest |> get_pr()
+
+```
+
+Here we can see the predictions of the Random Forest and the data on precision and recall for the Random Forest.
+
+
+The data on the left shows what the KNN and Random Forest algorithms predicted and how "accurate" its predictions were. A higher precision means fewer false positives, and a higher recall means fewer false negatives. The plot also shows that the Random Forest performed better overall. I have added the KNN data next to it to show that the Random Forest is usually more powerful. 
 
 
 Conclusions {.storyboard}
@@ -918,7 +941,7 @@ In this project, I analyzed my two tracks using different computational music te
 
 My first song turned out to be quite repetitive, which was clear from its self-similarity matrix and chroma features, showing that it sticks to a loop-based structure, which fits well with house and hardgroove styles. My second song had two drops, and this was reflected in its tempogram, energy novelty function and self-similarity differences, showing a bit more variation and buildup.
 
-Comparing them on harmonics and later by using SSMs I figured out that my songs were, as expected, quite similar to eachother. After this I analyzed the corpus on its distribution of AI and non-AI generated music, and calculated the precision of the Random Forest and KNN algorithms.
+Comparing them on harmonics and later by using SSMs I figured out that my songs were, as expected, quite similar to each other. After this I analyzed the corpus on its distribution of AI and non-AI generated music, and calculated the precision of the Random Forest and KNN algorithms.
 
 Overall, this project helped me get a better grasp of how one can break down music in ways that are not always visible by just listening to the tracks.
 
